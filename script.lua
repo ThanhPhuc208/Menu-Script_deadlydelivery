@@ -30,9 +30,9 @@ local function getElevatorFloor()
         if v:IsA("Model") and (v.Name:lower():match("elevator") or v.Name:lower():match("lift")) then
             local f = v:FindFirstChild("Floor") or v:FindFirstChild("Main") or v:FindFirstChildOfClass("BasePart")
             if f then return f end
-		end
-	end
-	return nil
+        end
+    end
+    return nil
 end
 
 task.spawn(function()
@@ -48,12 +48,27 @@ task.spawn(function()
                     local minDist = math.huge
                     
                     for _, v in pairs(workspace:GetDescendants()) do
-                        if v:IsA("BasePart") and (v.Name:lower():match("food") or v.Name:lower():match("item") or v.Name:lower():match("egg") or v.Name:lower():match("package") or v.Name:lower():match("loot")) then
-                            if not v:IsDescendantOf(workspace:FindFirstChild("MainElevator") or workspace) or v.Position.Y < 500 then
-                                local dist = (root.Position - v.Position).Magnitude
-                                if dist < minDist and dist < 300 then
-                                    minDist = dist
-                                    targetItem = v
+                        if v:IsA("BasePart") then
+                            local name = v.Name:lower()
+                            if name:match("food") or name:match("item") or name:match("egg") or name:match("package") or name:match("loot") or v:MoveDirection().Magnitude > 0 then
+                                if not v:IsDescendantOf(workspace:FindFirstChild("MainElevator") or workspace) then
+                                    local dist = (root.Position - v.Position).Magnitude
+                                    if dist < minDist then
+                                        minDist = dist
+                                        targetItem = v
+                                    end
+                                end
+                            end
+                        elseif v:IsA("Model") then
+                            local name = v.Name:lower()
+                            if name:match("food") or name:match("item") or name:match("egg") or name:match("package") then
+                                local p = v:FindFirstChildOfClass("BasePart")
+                                if p and not v:IsDescendantOf(workspace:FindFirstChild("MainElevator") or workspace) then
+                                    local dist = (root.Position - p.Position).Magnitude
+                                    if dist < minDist then
+                                        minDist = dist
+                                        targetItem = p
+                                    end
                                 end
                             end
                         end
@@ -62,12 +77,12 @@ task.spawn(function()
                     if targetItem then
                         root.CFrame = targetItem.CFrame
                         fireInteraction(targetItem)
-                        task.wait(0.1)
+                        task.wait(0.15)
                         
                         local elevator = getElevatorFloor()
                         if elevator then
                             root.CFrame = elevator.CFrame + Vector3.new(0, 3, 0)
-                            task.wait(0.1)
+                            task.wait(0.15)
                         end
                     end
                 end
